@@ -15,6 +15,8 @@ import Orders from "./components/Orders/Orders";
 import Incomes from "./components/Incomes/Incomes";
 import Status from "./components/Status/Status";
 import Groups from "./components/Groups/Groups";
+import AddItem from "./components/AddItem/AddItem";
+import TotalProducts from "./components/TotalProducts/TotalProducts";
 
 const router = createBrowserRouter([
   {
@@ -56,6 +58,14 @@ const router = createBrowserRouter([
       {
         path:"groups",
         element:<Groups/>
+      },
+      {
+        path:"additem",
+        element:<AddItem/>
+      },
+      {
+        path:"totalproducts",
+        element:<TotalProducts/>
       }
 
     ]

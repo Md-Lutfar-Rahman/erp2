@@ -18,6 +18,9 @@ function Master() {
                         <Link to="/task-crm" className="block w-full">Task CRM</Link>
                     </li>
                     <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
+                        <Link to="/totalproducts" className="block w-full">Total Products</Link>
+                    </li>
+                    <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
                         <Link to="/projects" className="block w-full">Projects</Link>
                     </li>
                     <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer">
