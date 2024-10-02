@@ -10,6 +10,7 @@ function AddItem() {
         quantity: '',
         price: '',
         details: '',
+        imageUrl: '', // Add imageUrl to the state
     });
 
     const [message, setMessage] = useState('');  // State for success/error messages
@@ -41,6 +42,7 @@ function AddItem() {
                 quantity: '',
                 price: '',
                 details: '',
+                imageUrl: '', // Reset imageUrl as well
             });
         } catch (error) {
             console.error('Error adding product:', error);
@@ -148,6 +150,18 @@ function AddItem() {
                         onChange={handleChange}
                         required
                         rows="4"
+                        className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-500"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="imageUrl">Image URL</label>
+                    <input
+                        type="text"
+                        name="imageUrl"
+                        id="imageUrl"
+                        value={product.imageUrl}
+                        onChange={handleChange}
+                        required
                         className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-500"
                     />
                 </div>
