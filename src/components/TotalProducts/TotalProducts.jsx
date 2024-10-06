@@ -129,7 +129,7 @@ function TotalProducts() {
         }));
     };
 
-    const truncateDetails = (details, wordLimit = 10) => {
+    const truncateDetails = (details, wordLimit = 5) => {
         const words = details.split(' ');
         if (words.length <= wordLimit) {
             return details;
@@ -151,7 +151,7 @@ function TotalProducts() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto mt-10 p-4 bg-white shadow-md rounded">
+        <div className="max-w-8xl mx-auto mt-10 p-4 bg-white shadow-md rounded">
             <h2 className="text-2xl font-semibold mb-4">Total Products</h2>
             {products.length === 0 ? (
                 <p className="text-gray-500">No products available.</p>
@@ -165,7 +165,7 @@ function TotalProducts() {
                             <th className="py-2 px-4 border">Date</th>
                             <th className="py-2 px-4 border">Quantity</th>
                             <th className="py-2 px-4 border">Price</th>
-                            <th className="py-2 px-4 border">Details</th>
+                            <th className="py-2 px-4 border w-1/5">Details</th> {/* Adjust width here */}
                             <th className="py-2 px-4 border">Image</th>
                             <th className="py-2 px-4 border">Actions</th>
                         </tr>
@@ -196,18 +196,20 @@ function TotalProducts() {
                                     )}
                                 </td>
                                 <td className="py-2 px-4 border">
-                                    <button
-                                        className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
-                                        onClick={() => openEditModal(product)}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        className="bg-red-500 text-white px-2 py-1 rounded"
-                                        onClick={() => openDeleteConfirmation(product)}
-                                    >
-                                        Delete
-                                    </button>
+                                    <div className="flex space-x-2"> {/* Use flex for alignment */}
+                                        <button
+                                            className="bg-blue-500 text-white px-2 py-1 rounded"
+                                            onClick={() => openEditModal(product)}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            className="bg-red-500 text-white px-2 py-1 rounded"
+                                            onClick={() => openDeleteConfirmation(product)}
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -227,102 +229,86 @@ function TotalProducts() {
 
                         <form onSubmit={handleEditSubmit}>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Name</label>
+                                <label className="block mb-1">Name</label>
                                 <input
                                     type="text"
                                     value={currentProduct.name}
                                     onChange={(e) => setCurrentProduct({ ...currentProduct, name: e.target.value })}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
+                                    className="border rounded w-full px-3 py-2"
                                     required
                                 />
                             </div>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Model</label>
+                                <label className="block mb-1">Model</label>
                                 <input
                                     type="text"
                                     value={currentProduct.model}
                                     onChange={(e) => setCurrentProduct({ ...currentProduct, model: e.target.value })}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
-                                    required
+                                    className="border rounded w-full px-3 py-2"
                                 />
                             </div>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Suppliers</label>
+                                <label className="block mb-1">Suppliers</label>
                                 <input
                                     type="text"
                                     value={currentProduct.suppliers}
                                     onChange={(e) => setCurrentProduct({ ...currentProduct, suppliers: e.target.value })}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
-                                    required
+                                    className="border rounded w-full px-3 py-2"
                                 />
                             </div>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Date</label>
+                                <label className="block mb-1">Date</label>
                                 <input
                                     type="date"
                                     value={currentProduct.date}
                                     onChange={(e) => setCurrentProduct({ ...currentProduct, date: e.target.value })}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
-                                    required
+                                    className="border rounded w-full px-3 py-2"
                                 />
                             </div>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Quantity</label>
+                                <label className="block mb-1">Quantity</label>
                                 <input
                                     type="number"
                                     value={currentProduct.quantity}
-                                    onChange={(e) => setCurrentProduct({ ...currentProduct, quantity: Number(e.target.value) })}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
+                                    onChange={(e) => setCurrentProduct({ ...currentProduct, quantity: e.target.value })}
+                                    className="border rounded w-full px-3 py-2"
+                                    min="0"
                                     required
                                 />
                             </div>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Price</label>
+                                <label className="block mb-1">Price</label>
                                 <input
                                     type="number"
                                     value={currentProduct.price}
-                                    onChange={(e) => setCurrentProduct({ ...currentProduct, price: Number(e.target.value) })}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
+                                    onChange={(e) => setCurrentProduct({ ...currentProduct, price: e.target.value })}
+                                    className="border rounded w-full px-3 py-2"
+                                    min="0"
                                     required
                                 />
                             </div>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Details</label>
+                                <label className="block mb-1">Details</label>
                                 <textarea
                                     value={currentProduct.details}
                                     onChange={(e) => setCurrentProduct({ ...currentProduct, details: e.target.value })}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
-                                    required
+                                    className="border rounded w-full px-3 py-2"
                                 />
                             </div>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Image URL</label>
+                                <label className="block mb-1">Image URL</label>
                                 <input
                                     type="text"
                                     value={currentProduct.imageUrl}
                                     onChange={(e) => setCurrentProduct({ ...currentProduct, imageUrl: e.target.value })}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
-                                    required
+                                    className="border rounded w-full px-3 py-2"
                                 />
                             </div>
                             <div className="flex justify-end">
-                                <button
-                                    type="button"
-                                    onClick={closeModal}
-                                    className="mr-2 bg-gray-300 text-gray-800 px-4 py-2 rounded"
-                                >
-                                    Cancel
-                                </button>
-                                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-                                    Save
-                                </button>
+                                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Save</button>
+                                <button type="button" onClick={closeModal} className="ml-2 bg-gray-300 px-4 py-2 rounded">Cancel</button>
                             </div>
                         </form>
-
-                        {/* Close modal button */}
-                        <button onClick={closeModal} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
-                            &#10005;
-                        </button>
                     </div>
                 </div>
             )}
@@ -331,28 +317,12 @@ function TotalProducts() {
             {isDeleteModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center z-50">
                     <div className="bg-white rounded shadow-lg p-6 w-96 relative">
-                        <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
-                        <p>Are you sure you want to delete this product?</p>
+                        <h3 className="text-lg font-semibold mb-4">Delete Product</h3>
+                        <p>Are you sure you want to delete {productToDelete?.name}?</p>
                         <div className="flex justify-end mt-4">
-                            <button
-                                type="button"
-                                onClick={closeDeleteModal}
-                                className="mr-2 bg-gray-300 text-gray-800 px-4 py-2 rounded"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                onClick={confirmDelete} 
-                                className="bg-red-500 text-white px-4 py-2 rounded"
-                            >
-                                Delete
-                            </button>
+                            <button onClick={confirmDelete} className="bg-red-500 text-white px-4 py-2 rounded">Delete</button>
+                            <button onClick={closeDeleteModal} className="ml-2 bg-gray-300 px-4 py-2 rounded">Cancel</button>
                         </div>
-
-                        {/* Close delete modal button */}
-                        <button onClick={closeDeleteModal} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
-                            &#10005;
-                        </button>
                     </div>
                 </div>
             )}
