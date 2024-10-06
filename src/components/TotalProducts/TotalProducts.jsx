@@ -5,20 +5,28 @@ function TotalProducts() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentProduct, setCurrentProduct] = useState({
-        _id: '', // Include the ID for editing
+        _id: '',
         name: '',
-        description: '',
+        model: '',
+        suppliers: '',
+        date: '',
         quantity: 0,
         price: 0,
+        details: '', // New field
+        imageUrl: '' // New field
     });
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [productToDelete, setProductToDelete] = useState(null);
+    const [expandedDetails, setExpandedDetails] = useState({}); // Track which product's details are expanded
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
                 const response = await axios.get('http://localhost:3000/products');
-                console.log('Fetched Products:', response.data); // Debugging log
+                console.log('Fetched Products:', response.data);
                 setProducts(response.data);
                 setLoading(false);
             } catch (err) {
@@ -31,62 +39,109 @@ function TotalProducts() {
         fetchProducts();
     }, []);
 
-    // Delete product function
     const deleteProduct = async (id) => {
         try {
             await axios.delete(`http://localhost:3000/products/${id}`);
             setProducts(products.filter((product) => product._id !== id));
+            setSuccessMessage('Product deleted successfully!');
         } catch (err) {
             console.error('Error deleting product:', err);
             setError(err.response ? err.response.data.message : err.message);
         }
     };
 
-    // Open modal to edit product
     const openEditModal = (product) => {
         setCurrentProduct(product);
         setIsModalOpen(true);
-        console.log('Editing Product:', product); // Debugging log
+        setError(null);
+        setSuccessMessage(null);
+        console.log('Editing Product:', product);
     };
 
-    // Handle form submission for editing
+    const openDeleteConfirmation = (product) => {
+        setProductToDelete(product);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = () => {
+        if (productToDelete) {
+            deleteProduct(productToDelete._id);
+        }
+        closeDeleteModal();
+    };
+
     const handleEditSubmit = async (e) => {
         e.preventDefault();
-        console.log('Submitting Edit:', currentProduct); // Debugging log
+        console.log('Submitting Edit:', currentProduct);
+        if (currentProduct.name === '' || currentProduct.price <= 0 || currentProduct.quantity < 0) {
+            setError('Please fill out all fields correctly.');
+            setSuccessMessage(null);
+            return;
+        }
+
         try {
             const response = await axios.put(`http://localhost:3000/products/${currentProduct._id}`, {
                 name: currentProduct.name,
-                description: currentProduct.description,
+                model: currentProduct.model,
+                suppliers: currentProduct.suppliers,
+                date: currentProduct.date,
                 quantity: currentProduct.quantity,
                 price: currentProduct.price,
+                details: currentProduct.details, // Updated field
+                imageUrl: currentProduct.imageUrl // Updated field
             });
-            console.log('Update Response:', response.data); // Debugging log
-            // Update the product in the list
+            console.log('Update Response:', response.data);
+
             setProducts(products.map((product) => (product._id === response.data._id ? response.data : product)));
-            setIsModalOpen(false);
-            resetCurrentProduct(); // Reset current product after successful update
+            setSuccessMessage('Product updated successfully!');
+            setError(null);
+
+            setTimeout(() => {
+                closeModal();
+            }, 2000);
         } catch (err) {
             console.error('Error updating product:', err);
             setError(err.response ? err.response.data.message : err.message);
+            setSuccessMessage(null);
         }
     };
 
-    // Reset current product state
     const resetCurrentProduct = () => {
-        setCurrentProduct({ _id: '', name: '', description: '', quantity: 0, price: 0 });
+        setCurrentProduct({ _id: '', name: '', model: '', suppliers: '', date: '', quantity: 0, price: 0, details: '', imageUrl: '' });
     };
 
-    // Close modal
     const closeModal = () => {
         setIsModalOpen(false);
         resetCurrentProduct();
+        setError(null);
+        setSuccessMessage(null);
+    };
+
+    const closeDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setProductToDelete(null);
+    };
+
+    const toggleDetails = (productId) => {
+        setExpandedDetails((prev) => ({
+            ...prev,
+            [productId]: !prev[productId],
+        }));
+    };
+
+    const truncateDetails = (details, wordLimit = 10) => {
+        const words = details.split(' ');
+        if (words.length <= wordLimit) {
+            return details;
+        }
+        return `${words.slice(0, wordLimit).join(' ')}...`;
     };
 
     if (loading) {
         return <p>Loading...</p>;
     }
 
-    if (error) {
+    if (error && !isModalOpen) {
         return (
             <div className="text-red-500">
                 <p>Error fetching products: {error}</p>
@@ -105,9 +160,13 @@ function TotalProducts() {
                     <thead>
                         <tr>
                             <th className="py-2 px-4 border">Name</th>
-                            <th className="py-2 px-4 border">Description</th>
+                            <th className="py-2 px-4 border">Model</th>
+                            <th className="py-2 px-4 border">Suppliers</th>
+                            <th className="py-2 px-4 border">Date</th>
                             <th className="py-2 px-4 border">Quantity</th>
                             <th className="py-2 px-4 border">Price</th>
+                            <th className="py-2 px-4 border">Details</th>
+                            <th className="py-2 px-4 border">Image</th>
                             <th className="py-2 px-4 border">Actions</th>
                         </tr>
                     </thead>
@@ -115,9 +174,27 @@ function TotalProducts() {
                         {products.map((product) => (
                             <tr key={product._id}>
                                 <td className="py-2 px-4 border">{product.name}</td>
-                                <td className="py-2 px-4 border">{product.details}</td>
+                                <td className="py-2 px-4 border">{product.model}</td>
+                                <td className="py-2 px-4 border">{product.suppliers}</td>
+                                <td className="py-2 px-4 border">{product.date}</td>
                                 <td className="py-2 px-4 border">{product.quantity}</td>
-                                <td className="py-2 px-4 border">${product.price}</td>
+                                <td className="py-2 px-4 border">BDT &#2547; &nbsp;{product.price}</td>
+                                <td className="py-2 px-4 border">
+                                    {expandedDetails[product._id]
+                                        ? product.details
+                                        : truncateDetails(product.details)}
+                                    <button
+                                        className="text-blue-500 ml-2"
+                                        onClick={() => toggleDetails(product._id)}
+                                    >
+                                        {expandedDetails[product._id] ? 'Read less' : 'Read more...'}
+                                    </button>
+                                </td>
+                                <td className="py-2 px-4 border">
+                                    {product.imageUrl && (
+                                        <img src={product.imageUrl} alt={product.name} className="h-16 w-16 object-cover" />
+                                    )}
+                                </td>
                                 <td className="py-2 px-4 border">
                                     <button
                                         className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
@@ -127,7 +204,7 @@ function TotalProducts() {
                                     </button>
                                     <button
                                         className="bg-red-500 text-white px-2 py-1 rounded"
-                                        onClick={() => deleteProduct(product._id)}
+                                        onClick={() => openDeleteConfirmation(product)}
                                     >
                                         Delete
                                     </button>
@@ -141,8 +218,13 @@ function TotalProducts() {
             {/* Modal for editing product */}
             {isModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center z-50">
-                    <div className="bg-white rounded shadow-lg p-6 w-96">
+                    <div className="bg-white rounded shadow-lg p-6 w-96 relative">
                         <h3 className="text-lg font-semibold mb-4">Edit Product</h3>
+
+                        {/* Success and error messages */}
+                        {error && <div className="text-red-500 mb-4">{error}</div>}
+                        {successMessage && <div className="text-green-500 mb-4">{successMessage}</div>}
+
                         <form onSubmit={handleEditSubmit}>
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700">Name</label>
@@ -155,11 +237,31 @@ function TotalProducts() {
                                 />
                             </div>
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Description</label>
+                                <label className="block text-sm font-medium text-gray-700">Model</label>
                                 <input
                                     type="text"
-                                    value={currentProduct.description}
-                                    onChange={(e) => setCurrentProduct({ ...currentProduct, description: e.target.value })}
+                                    value={currentProduct.model}
+                                    onChange={(e) => setCurrentProduct({ ...currentProduct, model: e.target.value })}
+                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Suppliers</label>
+                                <input
+                                    type="text"
+                                    value={currentProduct.suppliers}
+                                    onChange={(e) => setCurrentProduct({ ...currentProduct, suppliers: e.target.value })}
+                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Date</label>
+                                <input
+                                    type="date"
+                                    value={currentProduct.date}
+                                    onChange={(e) => setCurrentProduct({ ...currentProduct, date: e.target.value })}
                                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
                                     required
                                 />
@@ -169,7 +271,7 @@ function TotalProducts() {
                                 <input
                                     type="number"
                                     value={currentProduct.quantity}
-                                    onChange={(e) => setCurrentProduct({ ...currentProduct, quantity: parseInt(e.target.value) })}
+                                    onChange={(e) => setCurrentProduct({ ...currentProduct, quantity: Number(e.target.value) })}
                                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
                                     required
                                 />
@@ -179,7 +281,26 @@ function TotalProducts() {
                                 <input
                                     type="number"
                                     value={currentProduct.price}
-                                    onChange={(e) => setCurrentProduct({ ...currentProduct, price: parseFloat(e.target.value) })}
+                                    onChange={(e) => setCurrentProduct({ ...currentProduct, price: Number(e.target.value) })}
+                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Details</label>
+                                <textarea
+                                    value={currentProduct.details}
+                                    onChange={(e) => setCurrentProduct({ ...currentProduct, details: e.target.value })}
+                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Image URL</label>
+                                <input
+                                    type="text"
+                                    value={currentProduct.imageUrl}
+                                    onChange={(e) => setCurrentProduct({ ...currentProduct, imageUrl: e.target.value })}
                                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"
                                     required
                                 />
@@ -197,6 +318,41 @@ function TotalProducts() {
                                 </button>
                             </div>
                         </form>
+
+                        {/* Close modal button */}
+                        <button onClick={closeModal} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+                            &#10005;
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 flex items-center justify-center z-50">
+                    <div className="bg-white rounded shadow-lg p-6 w-96 relative">
+                        <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
+                        <p>Are you sure you want to delete this product?</p>
+                        <div className="flex justify-end mt-4">
+                            <button
+                                type="button"
+                                onClick={closeDeleteModal}
+                                className="mr-2 bg-gray-300 text-gray-800 px-4 py-2 rounded"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={confirmDelete} 
+                                className="bg-red-500 text-white px-4 py-2 rounded"
+                            >
+                                Delete
+                            </button>
+                        </div>
+
+                        {/* Close delete modal button */}
+                        <button onClick={closeDeleteModal} className="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+                            &#10005;
+                        </button>
                     </div>
                 </div>
             )}

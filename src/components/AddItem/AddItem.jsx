@@ -26,7 +26,7 @@ function AddItem() {
         setMessage('');  // Clear any existing messages
 
         try {
-            const response = await axios.post('http://localhost:5000/api/products', product);
+            const response = await axios.post('http://localhost:3000/products', product);
             console.log('Product added:', response.data);
 
             // Set success message
