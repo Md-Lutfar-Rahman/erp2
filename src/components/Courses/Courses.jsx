@@ -5,11 +5,10 @@ import { AiOutlineEdit, AiOutlineDelete } from 'react-icons/ai';
 
 function Courses() {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [chapters, setChapters] = useState([{ name: '', lessons: [{ title: '', subLessons: [''] }] }]); // Updated structure
+    const [chapters, setChapters] = useState([{ name: '', lessons: [{ title: '', videoLink: '', subLessons: [{ title: '', videoLink: '' }] }] }]); // Updated structure
     const [courseName, setCourseName] = useState('');
     const [description, setDescription] = useState('');
     const [duration, setDuration] = useState('');
-    const [videoLink, setVideoLink] = useState('');
     const [thumbnail, setThumbnail] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
@@ -45,9 +44,8 @@ function Courses() {
         setCourseName('');
         setDescription('');
         setDuration('');
-        setVideoLink('');
         setThumbnail(null);
-        setChapters([{ name: '', lessons: [{ title: '', subLessons: [''] }] }]); // Reset to initial structure
+        setChapters([{ name: '', lessons: [{ title: '', videoLink: '', subLessons: [{ title: '', videoLink: '' }] }] }]); // Reset to initial structure
     };
 
     const handleSubmit = async (e) => {
@@ -56,7 +54,6 @@ function Courses() {
         formData.append('name', courseName);
         formData.append('description', description);
         formData.append('duration', duration);
-        formData.append('videoLink', videoLink);
         formData.append('thumbnail', thumbnail);
         formData.append('chapters', JSON.stringify(chapters));
 
@@ -66,7 +63,6 @@ function Courses() {
                     name: courseName,
                     description,
                     duration,
-                    videoLink,
                     thumbnail,
                     chapters
                 });
@@ -76,7 +72,6 @@ function Courses() {
                     name: courseName,
                     description,
                     duration,
-                    videoLink,
                     thumbnail,
                     chapters
                 });
@@ -102,30 +97,42 @@ function Courses() {
 
     const handleLessonChange = (chapterIndex, lessonIndex, event) => {
         const newChapters = [...chapters];
-        newChapters[chapterIndex].lessons[lessonIndex].title = event.target.value; // Changed to title
+        newChapters[chapterIndex].lessons[lessonIndex].title = event.target.value; 
         setChapters(newChapters);
         setErrorMessage(''); 
     };
 
+    const handleVideoLinkChange = (chapterIndex, lessonIndex, event) => {
+        const newChapters = [...chapters];
+        newChapters[chapterIndex].lessons[lessonIndex].videoLink = event.target.value; // Handle video link change for lesson
+        setChapters(newChapters);
+    };
+
     const handleAddChapter = () => {
-        setChapters([...chapters, { name: '', lessons: [{ title: '', subLessons: [''] }] }]); // Updated structure
+        setChapters([...chapters, { name: '', lessons: [{ title: '', videoLink: '', subLessons: [{ title: '', videoLink: '' }] }] }]); // Updated structure
     };
 
     const handleAddLesson = (chapterIndex) => {
         const newChapters = [...chapters];
-        newChapters[chapterIndex].lessons.push({ title: '', subLessons: [''] }); // Updated structure
+        newChapters[chapterIndex].lessons.push({ title: '', videoLink: '', subLessons: [{ title: '', videoLink: '' }] }); // Updated structure
         setChapters(newChapters);
     };
 
     const handleAddSubLesson = (chapterIndex, lessonIndex) => {
         const newChapters = [...chapters];
-        newChapters[chapterIndex].lessons[lessonIndex].subLessons.push(''); // Add new sub-lesson
+        newChapters[chapterIndex].lessons[lessonIndex].subLessons.push({ title: '', videoLink: '' }); // Add new sub-lesson
         setChapters(newChapters);
     };
 
     const handleSubLessonChange = (chapterIndex, lessonIndex, subLessonIndex, event) => {
         const newChapters = [...chapters];
-        newChapters[chapterIndex].lessons[lessonIndex].subLessons[subLessonIndex] = event.target.value; // Change sub-lesson title
+        newChapters[chapterIndex].lessons[lessonIndex].subLessons[subLessonIndex].title = event.target.value; // Change sub-lesson title
+        setChapters(newChapters);
+    };
+
+    const handleSubLessonVideoLinkChange = (chapterIndex, lessonIndex, subLessonIndex, event) => {
+        const newChapters = [...chapters];
+        newChapters[chapterIndex].lessons[lessonIndex].subLessons[subLessonIndex].videoLink = event.target.value; // Change sub-lesson video link
         setChapters(newChapters);
     };
 
@@ -133,7 +140,6 @@ function Courses() {
         setCourseName(course.name);
         setDescription(course.description);
         setDuration(course.duration);
-        setVideoLink(course.videoLink);
         setChapters(course.chapters); 
         setEditingCourseId(course._id); 
         setIsModalOpen(true); 
@@ -149,7 +155,18 @@ function Courses() {
             setErrorMessage('Failed to delete course. Please try again.');
         }
     };
-
+    const handleRemoveLesson = (chapterIndex, lessonIndex) => {
+        const newChapters = [...chapters];
+        newChapters[chapterIndex].lessons.splice(lessonIndex, 1); // Remove the specific lesson
+        setChapters(newChapters);
+    };
+    
+    const handleRemoveSubLesson = (chapterIndex, lessonIndex, subLessonIndex) => {
+        const newChapters = [...chapters];
+        newChapters[chapterIndex].lessons[lessonIndex].subLessons.splice(subLessonIndex, 1); // Remove the specific sub-lesson
+        setChapters(newChapters);
+    };
+    
     return (
         <div className="min-h-screen">
             <nav className="px-4 py-3 flex justify-between items-center">
@@ -208,137 +225,163 @@ function Courses() {
                 </tbody>
             </table>
 
-            {/* Modal for Adding/Editing Courses */}
-            {isModalOpen && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md overflow-y-auto max-h-[90vh]">
-                        <h2 className="text-2xl font-semibold mb-4">{editingCourseId ? 'Edit Course' : 'Add a New Course'}</h2>
-                        {successMessage && (
-                            <div className="mb-4 text-green-600">{successMessage}</div>
-                        )}
-                        {errorMessage && (
-                            <div className="mb-4 text-red-600">{errorMessage}</div>
-                        )}
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
-                                <label className="block mb-2">Course Name</label>
-                                <input
-                                    type="text"
-                                    value={courseName}
-                                    onChange={(e) => setCourseName(e.target.value)}
-                                    className="border border-gray-300 rounded w-full p-2"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2">Description</label>
-                                <textarea
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    className="border border-gray-300 rounded w-full p-2"
-                                    required
-                                ></textarea>
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2">Duration</label>
-                                <input
-                                    type="text"
-                                    value={duration}
-                                    onChange={(e) => setDuration(e.target.value)}
-                                    className="border border-gray-300 rounded w-full p-2"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2">Video Link</label>
-                                <input
-                                    type="text"
-                                    value={videoLink}
-                                    onChange={(e) => setVideoLink(e.target.value)}
-                                    className="border border-gray-300 rounded w-full p-2"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2">Thumbnail</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => setThumbnail(e.target.files[0])}
-                                    className="border border-gray-300 rounded w-full p-2"
-                                />
-                            </div>
+            {/* Success and Error Messages */}
+            {successMessage && <div className="mt-4 text-green-600">{successMessage}</div>}
+            {errorMessage && <div className="mt-4 text-red-600">{errorMessage}</div>}
 
-                            {/* Chapters Section */}
-                            <h3 className="text-xl font-semibold mb-2">Chapters</h3>
-                            {chapters.map((chapter, chapterIndex) => (
-                                <div key={chapterIndex} className="mb-4 border p-4 rounded">
-                                    <input
-                                        type="text"
-                                        value={chapter.name}
-                                        onChange={(e) => handleChapterChange(chapterIndex, e)}
-                                        placeholder="Chapter Name"
-                                        className="border border-gray-300 rounded w-full p-2 mb-2"
-                                        required
-                                    />
-                                    {chapter.lessons.map((lesson, lessonIndex) => (
-                                        <div key={lessonIndex} className="mb-2 border p-2 rounded">
-                                            <input
-                                                type="text"
-                                                value={lesson.title}
-                                                onChange={(e) => handleLessonChange(chapterIndex, lessonIndex, e)}
-                                                placeholder="Lesson Title"
-                                                className="border border-gray-300 rounded w-full p-2 mb-2"
-                                                required
-                                            />
-                                            <h4 className="font-semibold">Sub-Lessons</h4>
-                                            {lesson.subLessons.map((subLesson, subLessonIndex) => (
-                                                <input
-                                                    key={subLessonIndex}
-                                                    type="text"
-                                                    value={subLesson}
-                                                    onChange={(e) => handleSubLessonChange(chapterIndex, lessonIndex, subLessonIndex, e)}
-                                                    placeholder="Sub-Lesson Title"
-                                                    className="border border-gray-300 rounded w-full p-2 mb-2"
-                                                    required
-                                                />
-                                            ))}
-                                            <button
-                                                type="button"
-                                                onClick={() => handleAddSubLesson(chapterIndex, lessonIndex)}
-                                                className="flex items-center text-blue-500 hover:text-blue-600"
-                                            >
-                                                <AiOutlinePlus /> Add Sub-Lesson
-                                            </button>
-                                        </div>
-                                    ))}
-                                    <button
-                                        type="button"
-                                        onClick={() => handleAddLesson(chapterIndex)}
-                                        className="flex items-center text-blue-500 hover:text-blue-600"
-                                    >
-                                        <AiOutlinePlus /> Add Lesson
-                                    </button>
-                                </div>
-                            ))}
-                            <button
-                                type="button"
-                                onClick={handleAddChapter}
-                                className="flex items-center text-blue-500 hover:text-blue-600 mb-4"
-                            >
-                                <AiOutlinePlus /> Add Chapter
-                            </button>
-                            <button
-                                type="submit"
-                                className="bg-blue-500 px-4 py-2 rounded text-white hover:bg-blue-600"
-                            >
-                                {editingCourseId ? 'Update Course' : 'Add Course'}
-                            </button>
-                        </form>
-                        <button onClick={handleModalClose} className="mt-4 text-red-500">Close</button>
-                    </div>
-                </div>
+            {/* Modal for Adding/Editing Course */}
+            {isModalOpen && (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white p-6 rounded shadow-lg max-h-[80vh] w-[80vw] overflow-y-auto">
+            <h2 className="text-2xl mb-4">{editingCourseId ? 'Edit Course' : 'Add Course'}</h2>
+            {errorMessage && (
+                <div className="mb-4 text-red-600">{errorMessage}</div>
             )}
+            <form onSubmit={handleSubmit}>
+                <div className="mb-4">
+                    <label className="block mb-2">Course Name</label>
+                    <input
+                        type="text"
+                        value={courseName}
+                        onChange={(e) => setCourseName(e.target.value)}
+                        className="border border-gray-300 rounded w-full p-2"
+                        required
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block mb-2">Description</label>
+                    <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="border border-gray-300 rounded w-full p-2"
+                        required
+                    ></textarea>
+                </div>
+                <div className="mb-4">
+                    <label className="block mb-2">Duration</label>
+                    <input
+                        type="text"
+                        value={duration}
+                        onChange={(e) => setDuration(e.target.value)}
+                        className="border border-gray-300 rounded w-full p-2"
+                        required
+                    />
+                </div>
+                <div className="mb-4">
+                    <label className="block mb-2">Thumbnail</label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setThumbnail(e.target.files[0])}
+                        className="border border-gray-300 rounded w-full p-2"
+                    />
+                </div>
+
+                {/* Chapters Section */}
+                <h3 className="text-xl font-semibold mb-2">Chapters</h3>
+                {chapters.map((chapter, chapterIndex) => (
+                    <div key={chapterIndex} className="mb-4 border p-4 rounded">
+                        <input
+                            type="text"
+                            value={chapter.name}
+                            onChange={(e) => handleChapterChange(chapterIndex, e)}
+                            placeholder="Chapter Name"
+                            className="border border-gray-300 rounded w-full p-2 mb-2"
+                            required
+                        />
+                        {chapter.lessons.map((lesson, lessonIndex) => (
+                            <div key={lessonIndex} className="mb-2 border p-2 rounded">
+                                <input
+                                    type="text"
+                                    value={lesson.title}
+                                    onChange={(e) => handleLessonChange(chapterIndex, lessonIndex, e)}
+                                    placeholder="Lesson Title"
+                                    className="border border-gray-300 rounded w-full p-2 mb-2"
+                                    required
+                                />
+                                <input
+                                    type="text"
+                                    value={lesson.videoLink}
+                                    onChange={(e) => handleVideoLinkChange(chapterIndex, lessonIndex, e)}
+                                    placeholder="Lesson Video Link"
+                                    className="border border-gray-300 rounded w-full p-2 mb-2"
+                                    required
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveLesson(chapterIndex, lessonIndex)}
+                                    className="text-red-500 hover:text-red-600 mb-2"
+                                >
+                                    Remove Lesson
+                                </button>
+
+                                <h4 className="font-semibold">Sub-Lessons</h4>
+                                {lesson.subLessons.map((subLesson, subLessonIndex) => (
+                                    <div key={subLessonIndex} className="mb-2 border p-2 rounded">
+                                        <input
+                                            type="text"
+                                            value={subLesson.title}
+                                            onChange={(e) => handleSubLessonChange(chapterIndex, lessonIndex, subLessonIndex, e)}
+                                            placeholder="Sub-Lesson Title"
+                                            className="border border-gray-300 rounded w-full p-2 mb-2"
+                                            required
+                                        />
+                                        <input
+                                            type="text"
+                                            value={subLesson.videoLink}
+                                            onChange={(e) => handleSubLessonVideoLinkChange(chapterIndex, lessonIndex, subLessonIndex, e)}
+                                            placeholder="Sub-Lesson Video Link"
+                                            className="border border-gray-300 rounded w-full p-2 mb-2"
+                                            required
+                                        />
+
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveSubLesson(chapterIndex, lessonIndex, subLessonIndex)}
+                                            className="text-red-500 hover:text-red-600"
+                                        >
+                                            Remove Sub-Lesson
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    type="button"
+                                    onClick={() => handleAddSubLesson(chapterIndex, lessonIndex)}
+                                    className="flex items-center text-blue-500 hover:text-blue-600"
+                                >
+                                    <AiOutlinePlus /> Add Sub-Lesson
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => handleAddLesson(chapterIndex)}
+                            className="flex items-center text-blue-500 hover:text-blue-600"
+                        >
+                            <AiOutlinePlus /> Add Lesson
+                        </button>
+                    </div>
+                ))}
+                <button
+                    type="button"
+                    onClick={handleAddChapter}
+                    className="flex items-center text-blue-500 hover:text-blue-600 mb-4"
+                >
+                    <AiOutlinePlus /> Add Chapter
+                </button>
+                <button
+                    type="submit"
+                    className="bg-blue-500 px-4 py-2 rounded text-white hover:bg-blue-600"
+                >
+                    {editingCourseId ? 'Update Course' : 'Add Course'}
+                </button>
+            </form>
+            <button onClick={handleModalClose} className="mt-4 text-red-500">Close</button>
+        </div>
+    </div>
+)}
+
         </div>
     );
 }
