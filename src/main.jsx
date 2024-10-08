@@ -18,61 +18,85 @@ import Groups from "./components/Groups/Groups";
 import AddItem from "./components/AddItem/AddItem";
 import TotalProducts from "./components/TotalProducts/TotalProducts";
 import Courses from "./components/Courses/Courses";
+import Login from "./components/Authentication/Login/Login"; 
+import PrivateRoute from "./components/PrivateRoute/PrivateRoute"; // Import the PrivateRoute component
+import Registration from "./components/Authentication/Registration"; // Import Registration component
+import PrivacyPolicy from "./components/PrivacyPolicy/privacyPolicy";
+import Users from "./components/Users/Users";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element:<Master/>,
-    children:[
+    element: <Login/> // Public Login Route
+  },
+  {
+    path: "/register", // New registration route
+    element: <Registration />
+  },
+  {
+    path:"/privacyPolicy",
+    element:<PrivacyPolicy/>
+  },
+  {
+    path: "/master",
+    element: (
+      <PrivateRoute> 
+        <Master /> 
+      </PrivateRoute>
+    ), // Protect the /master route with PrivateRoute
+    children: [
       {
-        path:"/",
-        element:<Home/>
+        path: "/master",
+        element: <Home />
       },
       {
-        path: "task-crm",
-        element:<TaskCRM/>
+        path: "/master/task-crm",
+        element: <TaskCRM />
       },
       {
-        path: "projects",
-        element:<Project/>
+        path: "/master/projects",
+        element: <Project />
       },
       {
-        path:"courses",
-        element:<Courses/>
+        path: "/master/courses",
+        element: <Courses />
       },
       {
-        path: "finance",
-        element:<Finance/>
+        path: "/master/finance",
+        element: <Finance />
       },
       {
-        path:"team",
-        element:<Team/>
+        path: "/master/team",
+        element: <Team />
       },
       {
-        path:"orders",
-        element:<Orders/>
+        path: "/master/orders",
+        element: <Orders />
       },
       {
-        path:"incomes",
-        element:<Incomes/>
+        path: "/master/incomes",
+        element: <Incomes />
       },
       {
-        path:"status",
-        element:<Status/>
+        path: "/master/status",
+        element: <Status />
       },
       {
-        path:"groups",
-        element:<Groups/>
+        path:"/master/users",
+        element:<Users/>
       },
       {
-        path:"additem",
-        element:<AddItem/>
+        path: "/master/groups",
+        element: <Groups />
       },
       {
-        path:"totalproducts",
-        element:<TotalProducts/>
+        path: "/master/additem",
+        element: <AddItem />
+      },
+      {
+        path: "/master/totalproducts",
+        element: <TotalProducts />
       }
-
     ]
   },
 ]);
